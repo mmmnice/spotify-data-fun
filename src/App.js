@@ -2,12 +2,16 @@ import logo from './logo.svg';
 import './App.css';
 import { useEffect, useState } from "react";
 import axios from 'axios';
-
+import config from './config.json';
 //REFRESH BREAKS THE TOKEN FROM LOCAL STORAGE
 
 function App() {
 
- 
+  //Config
+  const Client_ID = config.client_id;
+  const Redirect_URI = config.redirect_uri;
+  const Auth_Endpoint = config.auth_endpoint;
+  const Response_type = config.response_type;
 
   const [token, settoken] = useState('');
   const [searchKey, setSearchKey] = useState('');
