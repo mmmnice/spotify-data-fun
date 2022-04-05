@@ -16,10 +16,17 @@ function App() {
   const [token, settoken] = useState('');
   const [searchKey, setSearchKey] = useState('');
   const [artists, setArtists] = useState([]);
+  const [playlists, setPlaylists] = useState([]);
+
+  //id
+  const [selected, setSelected] = useState('');
+  //make key value pairs to save genres
+  const hey = [];
 
   useEffect(() => {
     let hash = window.location.hash;
     let token = window.localStorage.getItem('token');
+    console.log('let me see the token', token);
     if (!token) {
       let param = new URLSearchParams(hash);
       token = param.get('#access_token');
@@ -28,6 +35,7 @@ function App() {
 
     }
     settoken(token);
+    console.log(token);
 
   }, [])
 
@@ -38,7 +46,6 @@ function App() {
 
   let searchArtists = async (e) => {
     e.preventDefault();
-    console.log(token);
     const { data } = await axios.get('https://api.spotify.com/v1/search', {
       headers: {
         Authorization: `Bearer ${token}`
@@ -59,15 +66,13 @@ function App() {
         Authorization: `Bearer ${token}`
       }
     })
-    console.log(data);
+    setPlaylists(data.items);
 
 
   }
 
   const renderArtists = () => {
-    console.log('try', token);
     if (!token) {
-      console.log('im ')
       return null;
     } else {
       return artists.map(artist => (
@@ -78,6 +83,61 @@ function App() {
       ))
     }
 
+  }
+  const displayInfo = async (e) => {
+    // console.log('hey', e);
+    const { data } = await axios.get(`https://api.spotify.com/v1/playlists/${e.id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    //mapping for the genre
+    data.tracks.items.forEach(track => {
+      console.log(track.track, 'the track');
+      get_genre(track.track);
+    })
+    // get_artists(data);
+
+  }
+
+
+//Multiple artists can be present in each song
+  // const get_artists = async (songs) => {
+  //   const { data } = await axios.get(`https://api.spotify.com/v1/tracks/${songs.tracks.items[0].track.id}`, {
+  //     headers: {
+  //       Authorization: `Bearer ${token}`,
+  //     }
+  //   })
+  //   console.log(data, 'tracks of the playlist')
+
+  //   get_genre(data);
+  // }
+
+
+  const get_genre = async (song) => {
+    // join the artist ids
+    let artists = [];
+    song.artists.forEach(artist => {
+      artists.push(artist.id);
+    });
+    const { data } = await axios.get(`https://api.spotify.com/v1/artists`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        ids: artists.join(','),
+      }
+    })
+    console.log(data, 'lets see the data');
+  }
+  const renderPlaylists = () => {
+    console.log(playlists);
+    return playlists.map(playlist => (
+      <div key = {playlist.name} onClick ={() => displayInfo(playlist)}>
+        hey {playlist.name}
+      </div>
+    ))
   }
   return (
     <div className="App">
@@ -90,6 +150,7 @@ function App() {
         }
         {/* can separate this part to another component */}
         {renderArtists()}
+        {renderPlaylists()}
         <button onClick={searchPlaylists}> Playlists</button>
         {!token ? <h1>log in</h1> :
           <form onSubmit={searchArtists}>
