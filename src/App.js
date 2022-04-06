@@ -21,7 +21,7 @@ function App() {
   //id
   const [selected, setSelected] = useState('');
   //make key value pairs to save genres
-  const hey = [];
+  let hey = {};
 
   useEffect(() => {
     let hash = window.location.hash;
@@ -86,6 +86,7 @@ function App() {
   }
   const displayInfo = async (e) => {
     // console.log('hey', e);
+    hey = {};
     const { data } = await axios.get(`https://api.spotify.com/v1/playlists/${e.id}`, {
       headers: {
         Authorization: `Bearer ${token}`
@@ -129,7 +130,15 @@ function App() {
         ids: artists.join(','),
       }
     })
-    console.log(data, 'lets see the data');
+    data.artists.forEach(artist => {
+      console.log(artist.genres);
+      artist.genres.forEach(genre => {
+        //add genre
+        hey[genre] = (hey[genre] + 1) || 1
+        
+      })
+    })
+    console.log(hey);
   }
   const renderPlaylists = () => {
     console.log(playlists);
