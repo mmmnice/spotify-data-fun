@@ -20,7 +20,7 @@ function App() {
   //id
   const [selected, setSelected] = useState('');
   //make key value pairs to save genres
-  let hey = {};
+  let genre_counter = {};
 
   useEffect(() => {
     let hash = window.location.hash;
@@ -58,7 +58,8 @@ function App() {
 
   const displayInfo = async (e) => {
     // console.log('hey', e);
-    hey = {};
+    //reset
+    genre_counter = {};
     const { data } = await axios.get(`https://api.spotify.com/v1/playlists/${e.id}`, {
       headers: {
         Authorization: `Bearer ${token}`
@@ -67,9 +68,26 @@ function App() {
 
     //mapping for the genre
     data.tracks.items.forEach(track => {
-      get_genre(track.track);
+      get_genre(track.track).then(() => {
+        console.log('render thi');
+        // renderGenres();
+      });
     })
 
+    // await renderGenres();
+
+
+  }
+  const sort_genres = async (data) => {
+    data.artists.forEach(artist => {
+      artist.genres.forEach(genre => {
+        //add genre
+        genre_counter[genre] = (genre_counter[genre] + 1) || 1
+
+      })
+    })
+    return genre_counter;
+ 
   }
 
   const get_genre = async (song) => {
@@ -86,16 +104,13 @@ function App() {
         ids: artists.join(','),
       }
     })
-    data.artists.forEach(artist => {
-      // console.log(artist.genres);
-      artist.genres.forEach(genre => {
-        //add genre
-        hey[genre] = (hey[genre] + 1) || 1
 
-      })
-    })
+    sort_genres(data).then((poopy) => {
+      console.log(poopy);
+      renderGenres();
+      // console.log(info);
+    });
 
-    setGenres(hey);
   }
 
 
@@ -106,14 +121,22 @@ function App() {
       </div>
     ))
   }
-  const renderGenres = () => {
-    console.log(info, 'heyhey');
+  const renderGenres = async () => {
+    console.log(genre_counter, 'heyhey');
+    // console.log(get_gernes(), 'gernes');
+    Object.entries(genre_counter).map(([k,v]) => {
+      console.log(k, ' and ', v);
+    })
     // setTimeout(() => {
-    //   for(var key in hey){
-    //     console.log(key);
+    //   console.log(info);
+    //   for(var key in info){
+    //     console.log(key, 'new');
     //   }
     // }, 2000);
-    console.log(hey);
+    // for(var key in info){
+    //   console.log(key, 'new');
+    // }
+    // console.log(hey, 'the key');
     
   }
   return (
@@ -121,7 +144,7 @@ function App() {
       <header className="App-header">
         <h1>Spotify Reaact</h1>
         {!token ? <a href={`${Auth_Endpoint}?client_id=${Client_ID}&redirect_uri=${Redirect_URI}&response_type=${Response_type}`}>
-          Login in this bitch</a> :
+          Login in this </a> :
           <button onClick={logout}>logout</button>
 
         }
@@ -131,7 +154,8 @@ function App() {
             {renderPlaylists()}
           </div>
           <div className='actual-content'>
-            {renderGenres()}
+            {renderGenres}
+            {/* <button onClick = {renderGenres}> populate</button> */}
 
           </div>
         </div>
